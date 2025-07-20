@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Typing </title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #333;
+            --border-color: #e2e8f0;
+            --success-color: #48bb78;
+            --error-color: #f56565;
+            --warning-color: #ed8936;
+            --accent-color: #667eea;
+        }
+
+        [data-theme="dark"] {
+            --primary-bg: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            --secondary-bg: rgba(45, 55, 72, 0.95);
+            --text-color: #e2e8f0;
+            --border-color: #4a5568;
+            --success-color: #48bb78;
+            --error-color: #f56565;
+            --warning-color: #ed8936;
+            --accent-color: #667eea;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--primary-bg);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .game-container {
+            background: var(--secondary-bg);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 700px;
+            width: 90%;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        h1 {
+            color: var(--text-color);
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .theme-toggle {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .difficulty-selector {
+            margin-bottom: 30px;
+        }
+
+        .difficulty-btn {
+            background: var(--border-color);
+            color: var(--text-color);
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .difficulty-btn.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat {
+            background: linear-gradient(135deg, var(--accent-color), #764ba2);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            font-weight: 600;
+        }
+
+        .combo-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--success-color);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .combo-display.show {
+            animation: comboAnimation 1s ease-out;
+        }
+
+        @keyframes comboAnimation {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1) translateY(-50px); }
+        }
+
+        .word-display {
+            background: var(--secondary-bg);
+            border: 3px solid var(--border-color);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-color);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        .word-display.correct {
+            border-color: var(--success-color);
+            background: rgba(72, 187, 120, 0.1);
+        }
+
+        .word-display.incorrect {
+            border-color: var(--error-color);
+            background: rgba(245, 101, 101, 0.1);
+        }
+
+        .input-container {
+            margin: 30px 0;
+            position: relative;
+        }
+
+        #wordInput {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.2rem;
+            border: 3px solid var(--border-color);
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            background: var(--secondary-bg);
+            color: var(--text-color);
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        #wordInput:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .timer {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin: 20px 0;
+        }
+
+        .timer.warning {
+            color: var(--warning-color);
+        }
+
+        .timer.danger {
+            color: var(--error-color);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: var(--border-color);
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-color), #38a169);
+            transition: width 0.3s ease;
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--accent-color), #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .game-over {
+            background: var(--secondary-bg);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .game-over h2 {
+            color: var(--text-color);
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .final-score {
+            font-size: 1.5rem;
+            color: var(--text-color);
+            margin: 20px 0;
+        }
+
+        .leaderboard {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+        }
+
+        .leaderboard h3 {
+            color: var(--text-color);
+            margin-bottom: 15px;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-color);
+        }
+
+        .quote-mode {
+            font-style: italic;
+            font-size: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .mobile-optimized {
+            font-size: 1.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .word-display {
+                font-size: 1.5rem;
+                padding: 20px;
+            }
+            
+            .timer {
+                font-size: 2.5rem;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .sound-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .wpm-display {
+            font-size: 1.2rem;
+            color: var(--text-color);
+            margin: 10px 0;
+            font-weight: 600;
+        }
+
+        .global-leaderboard {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            border: 2px solid var(--border-color);
+        }
+
+        .global-leaderboard h3 {
+            color: var(--text-color);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .global-leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+
+        .global-leaderboard-item:last-child {
+            border-bottom: none;
+        }
+
+        .global-leaderboard-item .rank {
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container" id="gameContainer">
+        <div class="header">
+            <h1>🚀 Speed Typing </h1>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </div>
+
+        <button class="sound-toggle" id="soundToggle">🔊</button>
+
+        <div class="difficulty-selector">
+            <button class="difficulty-btn active" data-difficulty="easy">Easy</button>
+            <button class="difficulty-btn" data-difficulty="medium">Medium</button>
+            <button class="difficulty-btn" data-difficulty="hard">Hard</button>
+        </div>
+        
+        <div class="stats">
+            <div class="stat">
+                <div>Level</div>
+                <div id="level">1</div>
+            </div>
+            <div class="stat">
+                <div>Score</div>
+                <div id="score">0</div>
+            </div>
+            <div class="stat">
+                <div>High Score</div>
+                <div id="highScore">0</div>
+            </div>
+            <div class="stat">
+                <div>WPM</div>
+                <div id="wpm">0</div>
+            </div>
+            <div class="stat">
+                <div>Accuracy</div>
+                <div id="accuracy">100%</div>
+            </div>
+            <div class="stat">
+                <div>Combo</div>
+                <div id="combo">0</div>
+            </div>
+        </div>
+
+        <div class="wpm-display" id="wpmDisplay"></div>
+
+        <div class="global-leaderboard">
+            <h3>🏆 Global Leaderboard</h3>
+            <div id="globalLeaderboard">Loading...</div>
+        </div>
+
+        <div class="level-indicator">
+            Level <span id="currentLevel">1</span> - Type the word correctly!
+        </div>
+
+        <div class="word-display" id="wordDisplay">
+            Click Start to begin!
+        </div>
+
+        <div class="combo-display" id="comboDisplay"></div>
+
+        <div class="timer" id="timer">30</div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="input-container">
+            <input type="text" id="wordInput" placeholder="Type the word here..." disabled>
+        </div>
+
+        <div class="controls">
+            <button id="startBtn">Start Game</button>
+            <button id="resetBtn">Reset</button>
+            <button id="quoteModeBtn">Quote Mode</button>
+        </div>
+    </div>
+
+    <script src="words.js"></script>
+    <script>
+        class SpeedTypingGame {
+            constructor() {
+                this.words = window.WORD_LISTS || this.generateWordList();
+                this.quotes = this.generateQuoteList();
+                this.currentWord = '';
+                this.currentLevel = 1;
+                this.score = 0;
+                this.wordsCorrect = 0;
+                this.wordsIncorrect = 0;
+                this.combo = 0;
+                this.maxCombo = 0;
+                this.timeLeft = 30;
+                this.gameRunning = false;
+                this.timer = null;
+                this.baseTime = 30;
+                this.difficulty = 'easy';
+                this.quoteMode = false;
+                this.soundEnabled = true;
+                this.darkMode = localStorage.getItem('darkMode') === 'true';
+                this.startTime = null;
+                this.gameStartTime = null;
+                this.playerName = localStorage.getItem('playerName') || '';
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.loadHighScore();
+                this.applyTheme();
+                this.loadGlobalLeaderboard();
+            }
+
+            generateWordList() {
+                // Fallback in case words.js fails to load
+                return {
+                    easy: [
+                        'cat', 'dog', 'run', 'jump', 'play', 'book', 'tree', 'house', 'food', 'water',
+                        'bird', 'fish', 'star', 'moon', 'sun', 'rain', 'snow', 'wind', 'fire', 'earth',
+                        'love', 'hope', 'dream', 'smile', 'laugh', 'sing', 'dance', 'walk', 'talk', 'read',
+                        'write', 'draw', 'paint', 'build', 'create', 'learn', 'teach', 'help', 'care', 'share'
+                    ],
+                    medium: [
+                        'beautiful', 'wonderful', 'amazing', 'fantastic', 'excellent', 'brilliant', 'perfect',
+                        'computer', 'internet', 'website', 'program', 'software', 'hardware', 'network',
+                        'adventure', 'journey', 'explore', 'discover', 'mystery', 'treasure', 'diamond',
+                        'butterfly', 'rainbow', 'sunshine', 'mountain', 'ocean', 'forest', 'garden',
+                        'freedom', 'happiness', 'friendship', 'knowledge', 'wisdom', 'courage', 'strength'
+                    ],
+                    hard: [
+                        'extraordinary', 'phenomenal', 'magnificent', 'spectacular', 'incredible', 'wonderful',
+                        'technology', 'innovation', 'revolution', 'evolution', 'civilization', 'imagination',
+                        'adventurous', 'courageous', 'determined', 'persistent', 'enthusiastic', 'optimistic',
+                        'philosophy', 'psychology', 'mathematics', 'engineering', 'architecture', 'literature',
+                        'sophisticated', 'complicated', 'challenging', 'fascinating', 'remarkable', 'extraordinary',
+                        'algorithm', 'database', 'framework', 'interface', 'protocol', 'encryption',
+                        'authentication', 'authorization', 'optimization', 'performance', 'efficiency',
+                        'reliability', 'scalability', 'compatibility', 'functionality', 'accessibility'
+                    ]
+                };
+            }
+
+            generateQuoteList() {
+                return [
+                    "The only way to do great work is to love what you do.",
+                    "Life is what happens when you're busy making other plans.",
+                    "Success is not final, failure is not fatal.",
+                    "The future belongs to those who believe in the beauty of their dreams.",
+                    "In the middle of difficulty lies opportunity.",
+                    "Don't watch the clock; do what it does. Keep going.",
+                    "The only limit to our realization of tomorrow is our doubts of today.",
+                    "It always seems impossible until it's done.",
+                    "The way to get started is to quit talking and begin doing.",
+                    "Believe you can and you're halfway there.",
+                    "The best time to plant a tree was 20 years ago. The second best time is now.",
+                    "Your time is limited, don't waste it living someone else's life.",
+                    "The journey of a thousand miles begins with one step.",
+                    "What you get by achieving your goals is not as important as what you become.",
+                    "The only person you are destined to become is the person you decide to be."
+                ];
+            }
+
+            initializeElements() {
+                this.wordDisplay = document.getElementById('wordDisplay');
+                this.wordInput = document.getElementById('wordInput');
+                this.timerElement = document.getElementById('timer');
+                this.scoreElement = document.getElementById('score');
+                this.levelElement = document.getElementById('level');
+                this.wordsCorrectElement = document.getElementById('wordsCorrect');
+                this.currentLevelElement = document.getElementById('currentLevel');
+                this.progressFill = document.getElementById('progressFill');
+                this.startBtn = document.getElementById('startBtn');
+                this.resetBtn = document.getElementById('resetBtn');
+                this.quoteModeBtn = document.getElementById('quoteModeBtn');
+                this.themeToggle = document.getElementById('themeToggle');
+                this.soundToggle = document.getElementById('soundToggle');
+                this.comboDisplay = document.getElementById('comboDisplay');
+                this.comboElement = document.getElementById('combo');
+                this.wpmElement = document.getElementById('wpm');
+                this.accuracyElement = document.getElementById('accuracy');
+                this.highScoreElement = document.getElementById('highScore');
+                this.wpmDisplay = document.getElementById('wpmDisplay');
+                this.gameContainer = document.getElementById('gameContainer');
+                this.globalLeaderboardElement = document.getElementById('globalLeaderboard');
+                
+                // Prevent copy/paste on word display
+                this.wordDisplay.addEventListener('copy', (e) => e.preventDefault());
+                this.wordDisplay.addEventListener('paste', (e) => e.preventDefault());
+                this.wordDisplay.addEventListener('cut', (e) => e.preventDefault());
+                this.wordDisplay.addEventListener('selectstart', (e) => e.preventDefault());
+                this.wordDisplay.addEventListener('contextmenu', (e) => e.preventDefault());
+                
+                // Prevent copy/paste on input field
+                this.wordInput.addEventListener('copy', (e) => e.preventDefault());
+                this.wordInput.addEventListener('paste', (e) => e.preventDefault());
+                this.wordInput.addEventListener('cut', (e) => e.preventDefault());
+            }
+
+            bindEvents() {
+                this.startBtn.addEventListener('click', () => this.startGame());
+                this.resetBtn.addEventListener('click', () => this.resetGame());
+                this.quoteModeBtn.addEventListener('click', () => this.toggleQuoteMode());
+                this.themeToggle.addEventListener('click', () => this.toggleTheme());
+                this.soundToggle.addEventListener('click', () => this.toggleSound());
+                
+                this.wordInput.addEventListener('input', (e) => this.checkWord(e.target.value));
+                this.wordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.checkWord(e.target.value);
+                    }
+                });
+
+
+
+                // Difficulty buttons
+                document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.difficulty = e.target.dataset.difficulty;
+                        this.updateDifficultySettings();
+                    });
+                });
+            }
+
+            updateDifficultySettings() {
+                switch(this.difficulty) {
+                    case 'easy':
+                        this.baseTime = 45;
+                        break;
+                    case 'medium':
+                        this.baseTime = 30;
+                        break;
+                    case 'hard':
+                        this.baseTime = 20;
+                        break;
+                }
+                this.timeLeft = this.baseTime;
+                this.updateTimer();
+            }
+
+            loadHighScore() {
+                const highScore = localStorage.getItem('highScore') || 0;
+                this.highScoreElement.textContent = highScore;
+            }
+
+            async loadGlobalLeaderboard() {
+                try {
+                    const response = await fetch('/leaderboard');
+                    const leaderboard = await response.json();
+                    this.displayGlobalLeaderboard(leaderboard);
+                } catch (error) {
+                    console.error('Failed to load leaderboard:', error);
+                    this.globalLeaderboardElement.innerHTML = 'Failed to load leaderboard';
+                }
+            }
+
+            displayGlobalLeaderboard(leaderboard) {
+                if (!leaderboard || leaderboard.length === 0) {
+                    this.globalLeaderboardElement.innerHTML = '<p>No scores yet!</p>';
+                    return;
+                }
+
+                let html = '';
+                leaderboard.slice(0, 10).forEach((entry, index) => {
+                    html += `
+                        <div class="global-leaderboard-item">
+                            <span><span class="rank">#${index + 1}</span> ${entry.name}</span>
+                            <span>${entry.score} pts</span>
+                        </div>
+                    `;
+                });
+                this.globalLeaderboardElement.innerHTML = html;
+            }
+
+            async saveHighScore() {
+                const currentHighScore = parseInt(localStorage.getItem('highScore') || 0);
+                if (this.score > currentHighScore) {
+                    localStorage.setItem('highScore', this.score.toString());
+                    this.highScoreElement.textContent = this.score;
+                    this.playSound('highScore');
+                }
+                
+                if (!this.playerName) {
+                    this.playerName = prompt('Enter your name for the leaderboard:') || 'Anonymous';
+                    localStorage.setItem('playerName', this.playerName);
+                }
+                
+                try {
+                    const response = await fetch('/score', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            name: this.playerName,
+                            score: this.score
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        this.loadGlobalLeaderboard();
+                    }
+                } catch (error) {
+                    console.error('Failed to save score:', error);
+                }
+                
+                const leaderboard = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+                const playerName = this.playerName;
+                leaderboard.push({
+                    name: playerName,
+                    score: this.score,
+                    level: this.currentLevel,
+                    wpm: this.calculateWPM(),
+                    accuracy: this.calculateAccuracy(),
+                    date: new Date().toLocaleDateString()
+                });
+                
+                leaderboard.sort((a, b) => b.score - a.score);
+                leaderboard.splice(10);
+                
+                localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+            }
+
+            toggleQuoteMode() {
+                this.quoteMode = !this.quoteMode;
+                this.quoteModeBtn.textContent = this.quoteMode ? 'Word Mode' : 'Quote Mode';
+                this.quoteModeBtn.style.background = this.quoteMode ? 
+                    'linear-gradient(135deg, #f56565, #e53e3e)' : 
+                    'linear-gradient(135deg, #667eea, #764ba2)';
+            }
+
+            toggleTheme() {
+                this.darkMode = !this.darkMode;
+                localStorage.setItem('darkMode', this.darkMode.toString());
+                this.applyTheme();
+            }
+
+            applyTheme() {
+                document.documentElement.setAttribute('data-theme', this.darkMode ? 'dark' : 'light');
+                this.themeToggle.textContent = this.darkMode ? '☀️' : '🌙';
+            }
+
+            toggleSound() {
+                this.soundEnabled = !this.soundEnabled;
+                this.soundToggle.textContent = this.soundEnabled ? '🔊' : '🔇';
+            }
+
+            playSound(type) {
+                if (!this.soundEnabled) return;
+                
+                // Create audio context for sound effects
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                switch(type) {
+                    case 'correct':
+                        this.playTone(800, 0.1, 'sine');
+                        break;
+                    case 'incorrect':
+                        this.playTone(200, 0.2, 'sawtooth');
+                        break;
+                    case 'combo':
+                        this.playTone(1200, 0.15, 'square');
+                        break;
+                    case 'gameOver':
+                        this.playTone(150, 0.5, 'triangle');
+                        break;
+                    case 'highScore':
+                        this.playTone(1000, 0.1, 'sine');
+                        setTimeout(() => this.playTone(1200, 0.1, 'sine'), 100);
+                        setTimeout(() => this.playTone(1400, 0.1, 'sine'), 200);
+                        break;
+                }
+            }
+
+            playTone(frequency, duration, type) {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = type;
+                
+                // Much louder volume
+                gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + duration);
+            }
+
+            startGame() {
+                this.gameRunning = true;
+                this.startBtn.disabled = true;
+                this.wordInput.disabled = false;
+                this.wordInput.focus();
+                this.gameStartTime = Date.now();
+                this.generateNewWord();
+                this.startTimer();
+            }
+
+            resetGame() {
+                this.gameRunning = false;
+                this.currentLevel = 1;
+                this.score = 0;
+                this.wordsCorrect = 0;
+                this.wordsIncorrect = 0;
+                this.combo = 0;
+                this.maxCombo = 0;
+                this.timeLeft = this.baseTime;
+                this.wordInput.value = '';
+                this.wordInput.disabled = true;
+                this.startBtn.disabled = false;
+                this.wordDisplay.textContent = 'Click Start to begin!';
+                this.wordDisplay.className = 'word-display';
+                this.timerElement.className = 'timer';
+                this.timerElement.textContent = this.baseTime;
+                this.progressFill.style.width = '100%';
+                this.updateDisplay();
+                this.stopTimer();
+                
+                // Remove any existing game over overlay
+                const existingOverlay = document.querySelector('.game-over-overlay');
+                if (existingOverlay) {
+                    existingOverlay.remove();
+                }
+            }
+
+            generateNewWord() {
+                if (this.quoteMode) {
+                    this.currentWord = this.quotes[Math.floor(Math.random() * this.quotes.length)];
+                    this.wordDisplay.className = 'word-display quote-mode';
+                } else {
+                    const wordList = this.words[this.difficulty];
+                    this.currentWord = wordList[Math.floor(Math.random() * wordList.length)];
+                    this.wordDisplay.className = 'word-display';
+                }
+                this.wordDisplay.textContent = this.currentWord;
+                this.wordInput.value = '';
+                this.wordInput.focus();
+            }
+
+            checkWord(input) {
+                if (!this.gameRunning) return;
+
+                if (input.toLowerCase() === this.currentWord.toLowerCase()) {
+                    this.wordCorrect();
+                } else if (input.length >= this.currentWord.length) {
+                    this.wordIncorrect();
+                }
+            }
+
+            wordCorrect() {
+                this.wordsCorrect++;
+                this.combo++;
+                this.maxCombo = Math.max(this.maxCombo, this.combo);
+                
+                // Score calculation with combo bonus
+                let points = this.currentLevel * 10;
+                if (this.combo >= 5) {
+                    points += 50;
+                    this.showComboAnimation();
+                }
+                this.score += points;
+                
+                this.currentLevel++;
+                this.wordDisplay.className = 'word-display correct';
+                
+                // Time bonus every 5 correct words
+                if (this.wordsCorrect % 5 === 0) {
+                    this.timeLeft += 3;
+                    this.playSound('combo');
+                }
+                
+                // Decrease time for next level
+                this.timeLeft = Math.max(5, this.baseTime - (this.currentLevel - 1) * 2);
+                
+                this.playSound('correct');
+                
+                setTimeout(() => {
+                    if (this.gameRunning) {
+                        this.generateNewWord();
+                    }
+                }, 500);
+                
+                this.updateDisplay();
+            }
+
+            wordIncorrect() {
+                this.wordsIncorrect++;
+                this.combo = 0;
+                this.wordDisplay.className = 'word-display incorrect';
+                this.wordInput.value = '';
+                
+                this.playSound('incorrect');
+                
+                setTimeout(() => {
+                    if (this.gameRunning) {
+                        this.wordDisplay.className = 'word-display';
+                    }
+                }, 1000);
+                
+                this.updateDisplay();
+            }
+
+            showComboAnimation() {
+                this.comboDisplay.textContent = `COMBO x${this.combo}!`;
+                this.comboDisplay.classList.add('show');
+                setTimeout(() => {
+                    this.comboDisplay.classList.remove('show');
+                }, 1000);
+            }
+
+            startTimer() {
+                // Clear any existing timer first
+                this.stopTimer();
+                
+                this.timer = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateTimer();
+                    
+                    if (this.timeLeft <= 0) {
+                        this.gameOver();
+                    }
+                }, 1000);
+            }
+
+            stopTimer() {
+                if (this.timer) {
+                    clearInterval(this.timer);
+                    this.timer = null;
+                }
+            }
+
+            updateTimer() {
+                this.timerElement.textContent = this.timeLeft;
+                
+                // Update progress bar
+                const progress = (this.timeLeft / this.baseTime) * 100;
+                this.progressFill.style.width = `${progress}%`;
+                
+                // Add warning classes
+                if (this.timeLeft <= 10) {
+                    this.timerElement.className = 'timer danger';
+                } else if (this.timeLeft <= 15) {
+                    this.timerElement.className = 'timer warning';
+                } else {
+                    this.timerElement.className = 'timer';
+                }
+            }
+
+            calculateWPM() {
+                if (!this.gameStartTime) return 0;
+                const elapsedMinutes = (Date.now() - this.gameStartTime) / 60000;
+                return Math.round(this.wordsCorrect / elapsedMinutes);
+            }
+
+            calculateAccuracy() {
+                const totalAttempts = this.wordsCorrect + this.wordsIncorrect;
+                if (totalAttempts === 0) return 100;
+                return Math.round((this.wordsCorrect / totalAttempts) * 100);
+            }
+
+            async gameOver() {
+                this.gameRunning = false;
+                this.stopTimer();
+                this.wordInput.disabled = true;
+                this.startBtn.disabled = false;
+                
+                await this.saveHighScore();
+                this.playSound('gameOver');
+                
+                this.showGameOver();
+            }
+
+            async showGameOver() {
+                const wpm = this.calculateWPM();
+                const accuracy = this.calculateAccuracy();
+                
+                const overlay = document.createElement('div');
+                overlay.className = 'game-over-overlay';
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.8);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                `;
+                
+                const gameOverHTML = `
+                    <div class="game-over" style="max-width: 500px; width: 90%;">
+                        <h2>🎯 Game Over!</h2>
+                        <div class="final-score">
+                            <p>Final Score: <strong>${this.score}</strong></p>
+                            <p>Level Reached: <strong>${this.currentLevel}</strong></p>
+                            <p>Words Correct: <strong>${this.wordsCorrect}</strong></p>
+                            <p>WPM: <strong>${wpm}</strong></p>
+                            <p>Accuracy: <strong>${accuracy}%</strong></p>
+                            <p>Max Combo: <strong>${this.maxCombo}</strong></p>
+                        </div>
+                        <div class="leaderboard">
+                            <h3>🏆 High Scores</h3>
+                            ${this.getLeaderboardHTML()}
+                        </div>
+                        <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+                            <button onclick="game.playAgain();">Play Again</button>
+                        </div>
+                    </div>
+                `;
+                
+                overlay.innerHTML = gameOverHTML;
+                document.body.appendChild(overlay);
+            }
+
+            getLeaderboardHTML() {
+                const leaderboard = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+                let html = '';
+                leaderboard.slice(0, 5).forEach((score, index) => {
+                    html += `
+                        <div class="leaderboard-item">
+                            <span>${index + 1}. ${score.name} (Level ${score.level})</span>
+                            <span>${score.score} pts</span>
+                        </div>
+                    `;
+                });
+                return html || '<p>No scores yet!</p>';
+            }
+
+            updateDisplay() {
+                this.scoreElement.textContent = this.score;
+                this.levelElement.textContent = this.currentLevel;
+                this.wordsCorrectElement.textContent = this.wordsCorrect;
+                this.currentLevelElement.textContent = this.currentLevel;
+                this.comboElement.textContent = this.combo;
+                this.wpmElement.textContent = this.calculateWPM();
+                this.accuracyElement.textContent = `${this.calculateAccuracy()}%`;
+            }
+
+            backToHome() {
+                // Reset everything to initial state
+                this.gameRunning = false;
+                this.currentLevel = 1;
+                this.score = 0;
+                this.wordsCorrect = 0;
+                this.wordsIncorrect = 0;
+                this.combo = 0;
+                this.maxCombo = 0;
+                this.timeLeft = this.baseTime;
+                this.wordInput.value = '';
+                this.wordInput.disabled = true;
+                this.startBtn.disabled = false;
+                this.wordDisplay.textContent = 'Click Start to begin!';
+                this.wordDisplay.className = 'word-display';
+                this.timerElement.className = 'timer';
+                this.timerElement.textContent = this.baseTime;
+                this.progressFill.style.width = '100%';
+                this.updateDisplay();
+                this.stopTimer();
+                
+                // Remove any existing game over overlay
+                const existingOverlay = document.querySelector('.game-over-overlay');
+                if (existingOverlay) {
+                    existingOverlay.remove();
+                }
+            }
+
+            playAgain() {
+                // Remove the game over overlay
+                const existingOverlay = document.querySelector('.game-over-overlay');
+                if (existingOverlay) {
+                    existingOverlay.remove();
+                }
+                
+                // Reset game state
+                this.gameRunning = false;
+                this.currentLevel = 1;
+                this.score = 0;
+                this.wordsCorrect = 0;
+                this.wordsIncorrect = 0;
+                this.combo = 0;
+                this.maxCombo = 0;
+                this.timeLeft = this.baseTime;
+                this.wordInput.value = '';
+                this.wordInput.disabled = true;
+                this.startBtn.disabled = false;
+                this.wordDisplay.textContent = 'Click Start to begin!';
+                this.wordDisplay.className = 'word-display';
+                this.timerElement.className = 'timer';
+                this.timerElement.textContent = this.baseTime;
+                this.progressFill.style.width = '100%';
+                this.updateDisplay();
+                this.stopTimer();
+                
+                // Start a new game immediately
+                setTimeout(() => {
+                    this.startGame();
+                }, 100);
+            }
+        }
+
+        // Initialize the game
+        const game = new SpeedTypingGame();
+    </script>
+</body>
+</html> 
