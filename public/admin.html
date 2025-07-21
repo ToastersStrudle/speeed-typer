@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Typing Game - Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .admin-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+
+        .admin-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .admin-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .player-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .player-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .player-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .player-name {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .player-score {
+            color: #666;
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button.danger {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+        }
+
+        button.warning {
+            background: linear-gradient(135deg, #ed8936, #dd6b20);
+        }
+
+        .edit-score {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            width: 80px;
+        }
+
+        .reset-section {
+            text-align: center;
+            padding: 20px;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <h1>🏆 Admin Panel</h1>
+        
+        <div class="admin-section">
+            <h2>📊 Current Leaderboard</h2>
+            <div id="playerList" class="player-list">
+                <p>Loading...</p>
+            </div>
+        </div>
+
+        <div class="admin-section reset-section">
+            <h2>⚠️ Danger Zone</h2>
+            <p>Reset the entire leaderboard (this cannot be undone)</p>
+            <button class="danger" onclick="resetLeaderboard()">Reset All Scores</button>
+        </div>
+
+        <div class="back-link">
+            <a href="/">← Back to Game</a>
+        </div>
+    </div>
+
+    <script>
+        let leaderboard = [];
+
+        async function loadLeaderboard() {
+            try {
+                const response = await fetch('/admin/api');
+                leaderboard = await response.json();
+                displayLeaderboard();
+            } catch (error) {
+                console.error('Failed to load leaderboard:', error);
+                document.getElementById('playerList').innerHTML = '<p>Error loading leaderboard</p>';
+            }
+        }
+
+        function displayLeaderboard() {
+            const playerList = document.getElementById('playerList');
+            
+            if (leaderboard.length === 0) {
+                playerList.innerHTML = '<p>No players yet!</p>';
+                return;
+            }
+
+            let html = '';
+            leaderboard.forEach((player, index) => {
+                html += `
+                    <div class="player-item">
+                        <div class="player-info">
+                            <span class="player-name">#${index + 1} ${player.name}</span>
+                            <span class="player-score">${player.score} pts</span>
+                        </div>
+                        <div class="admin-actions">
+                            <div class="edit-score">
+                                <input type="number" id="score-${index}" value="${player.score}" min="0">
+                                <button onclick="updateScore('${player.name}', ${index})">Update</button>
+                            </div>
+                            <button class="danger" onclick="removePlayer('${player.name}')">Remove</button>
+                        </div>
+                    </div>
+                `;
+            });
+            playerList.innerHTML = html;
+        }
+
+        async function removePlayer(name) {
+            if (!confirm(`Are you sure you want to remove ${name}?`)) return;
+            
+            try {
+                const response = await fetch(`/admin/player/${encodeURIComponent(name)}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    alert(`Player ${name} removed successfully!`);
+                    loadLeaderboard();
+                } else {
+                    alert('Failed to remove player');
+                }
+            } catch (error) {
+                console.error('Error removing player:', error);
+                alert('Error removing player');
+            }
+        }
+
+        async function updateScore(name, index) {
+            const newScore = parseInt(document.getElementById(`score-${index}`).value);
+            
+            if (isNaN(newScore) || newScore < 0) {
+                alert('Please enter a valid score');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/admin/player/${encodeURIComponent(name)}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ score: newScore })
+                });
+                
+                if (response.ok) {
+                    alert(`Player ${name} score updated to ${newScore}!`);
+                    loadLeaderboard();
+                } else {
+                    alert('Failed to update score');
+                }
+            } catch (error) {
+                console.error('Error updating score:', error);
+                alert('Error updating score');
+            }
+        }
+
+        async function resetLeaderboard() {
+            if (!confirm('Are you sure you want to reset the entire leaderboard? This cannot be undone!')) return;
+            
+            try {
+                const response = await fetch('/admin/reset', {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    alert('Leaderboard reset successfully!');
+                    loadLeaderboard();
+                } else {
+                    alert('Failed to reset leaderboard');
+                }
+            } catch (error) {
+                console.error('Error resetting leaderboard:', error);
+                alert('Error resetting leaderboard');
+            }
+        }
+
+        loadLeaderboard();
+    </script>
+</body>
+</html> 
