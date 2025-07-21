@@ -6,6 +6,17 @@ const PORT = process.env.PORT || 3001;
 
 const LEADERBOARD_FILE = path.join(__dirname, 'leaderboard.json');
 
+const basicAuth = require('express-basic-auth');
+
+const ADMIN_USER = 'admin_8f3k2x';
+const ADMIN_PASS = 'P@ssw0rd!7x2Qb9#z';
+
+app.use(['/admin', '/admin/api', '/admin/player/:name', '/admin/reset'], basicAuth({
+    users: { [ADMIN_USER]: ADMIN_PASS },
+    challenge: true,
+    unauthorizedResponse: 'Unauthorized'
+}));
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -41,6 +52,47 @@ app.get('/leaderboard', (req, res) => {
         .map(([name, score]) => ({ name, score }))
         .sort((a, b) => b.score - a.score);
     res.json(sorted);
+});
+
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+app.get('/admin/api', (req, res) => {
+    const leaderboard = loadLeaderboard();
+    const sorted = Object.entries(leaderboard)
+        .map(([name, score]) => ({ name, score }))
+        .sort((a, b) => b.score - a.score);
+    res.json(sorted);
+});
+
+app.delete('/admin/player/:name', (req, res) => {
+    const { name } = req.params;
+    const leaderboard = loadLeaderboard();
+    if (leaderboard[name]) {
+        delete leaderboard[name];
+        saveLeaderboard(leaderboard);
+        res.json({ success: true, message: `Player ${name} removed` });
+    } else {
+        res.status(404).json({ error: 'Player not found' });
+    }
+});
+
+app.put('/admin/player/:name', (req, res) => {
+    const { name } = req.params;
+    const { score } = req.body;
+    if (typeof score !== 'number') {
+        return res.status(400).json({ error: 'Invalid score' });
+    }
+    const leaderboard = loadLeaderboard();
+    leaderboard[name] = score;
+    saveLeaderboard(leaderboard);
+    res.json({ success: true, message: `Player ${name} score updated to ${score}` });
+});
+
+app.delete('/admin/reset', (req, res) => {
+    saveLeaderboard({});
+    res.json({ success: true, message: 'Leaderboard reset' });
 });
 
 app.listen(PORT, () => {
