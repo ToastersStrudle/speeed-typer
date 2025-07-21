@@ -400,6 +400,42 @@
             font-weight: bold;
             color: var(--accent-color);
         }
+        .difficulty-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .difficulty-tab {
+            background: #e2e8f0;
+            color: #333;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .difficulty-tab.active {
+            background: #667eea;
+            color: white;
+        }
+        @media (max-width: 600px) {
+            .global-leaderboard {
+                padding: 10px;
+            }
+            .global-leaderboard h3 {
+                font-size: 1rem;
+            }
+            .global-leaderboard-item {
+                font-size: 0.8rem;
+            }
+            .difficulty-tab {
+                padding: 6px 10px;
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -447,8 +483,13 @@
         <div class="wpm-display" id="wpmDisplay"></div>
 
         <div class="global-leaderboard">
-            <h3>🏆 Global Leaderboard</h3>
+            <h3>�� Global Leaderboard (<span id="globalLeaderboardDifficulty">Easy</span>)</h3>
             <div id="globalLeaderboard">Loading...</div>
+            <div class="difficulty-tabs">
+                <button class="difficulty-tab active" data-difficulty="easy">Easy</button>
+                <button class="difficulty-tab" data-difficulty="medium">Medium</button>
+                <button class="difficulty-tab" data-difficulty="hard">Hard</button>
+            </div>
         </div>
 
         <div class="level-indicator">
@@ -620,6 +661,16 @@
                         this.updateDifficultySettings();
                     });
                 });
+
+                document.querySelectorAll('.difficulty-tab').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.difficulty-tab').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.difficulty = e.target.getAttribute('data-difficulty');
+                        document.getElementById('globalLeaderboardDifficulty').textContent = this.difficulty.charAt(0).toUpperCase() + this.difficulty.slice(1);
+                        this.loadGlobalLeaderboard();
+                    });
+                });
             }
 
             updateDifficultySettings() {
@@ -645,7 +696,7 @@
 
             async loadGlobalLeaderboard() {
                 try {
-                    const response = await fetch('/leaderboard');
+                    const response = await fetch(`/leaderboard?difficulty=${this.difficulty}`);
                     const leaderboard = await response.json();
                     this.displayGlobalLeaderboard(leaderboard);
                 } catch (error) {
@@ -686,7 +737,7 @@
                 }
                 
                 try {
-                    const response = await fetch('/score', {
+                    const response = await fetch(`/score?difficulty=${this.difficulty}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -712,7 +763,8 @@
                     level: this.currentLevel,
                     wpm: this.calculateWPM(),
                     accuracy: this.calculateAccuracy(),
-                    date: new Date().toLocaleDateString()
+                    date: new Date().toLocaleDateString(),
+                    difficulty: this.difficulty
                 });
                 
                 leaderboard.sort((a, b) => b.score - a.score);

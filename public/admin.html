@@ -5,19 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Speed Typing Game - Admin Panel</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
-
         .admin-container {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
@@ -26,31 +20,31 @@
             margin: 0 auto;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
         }
-
-        h1 {
+        h1 { color: #333; text-align: center; margin-bottom: 30px; font-size: 2.5rem; }
+        .difficulty-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .difficulty-tab {
+            background: #e2e8f0;
             color: #333;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2.5rem;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
-
-        .admin-section {
-            margin-bottom: 30px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
+        .difficulty-tab.active {
+            background: #667eea;
+            color: white;
         }
-
-        .admin-section h2 {
-            color: #333;
-            margin-bottom: 15px;
-        }
-
-        .player-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
+        .admin-section { margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px; }
+        .admin-section h2 { color: #333; margin-bottom: 15px; }
+        .player-list { max-height: 400px; overflow-y: auto; }
         .player-item {
             display: flex;
             justify-content: space-between;
@@ -61,27 +55,10 @@
             border-radius: 5px;
             border: 1px solid #ddd;
         }
-
-        .player-info {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .player-name {
-            font-weight: bold;
-            color: #333;
-        }
-
-        .player-score {
-            color: #666;
-        }
-
-        .admin-actions {
-            display: flex;
-            gap: 10px;
-        }
-
+        .player-info { display: flex; gap: 20px; align-items: center; }
+        .player-name { font-weight: bold; color: #333; }
+        .player-score { color: #666; }
+        .admin-actions { display: flex; gap: 10px; }
         button {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
@@ -92,80 +69,63 @@
             font-size: 0.9rem;
             transition: all 0.3s ease;
         }
-
-        button:hover {
-            transform: translateY(-2px);
-        }
-
-        button.danger {
-            background: linear-gradient(135deg, #f56565, #e53e3e);
-        }
-
-        button.warning {
-            background: linear-gradient(135deg, #ed8936, #dd6b20);
-        }
-
-        .edit-score {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        input {
-            padding: 5px 10px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            width: 80px;
-        }
-
-        .reset-section {
-            text-align: center;
-            padding: 20px;
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 10px;
-        }
-
-        .back-link {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .back-link a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: bold;
+        button:hover { transform: translateY(-2px); }
+        button.danger { background: linear-gradient(135deg, #f56565, #e53e3e); }
+        button.warning { background: linear-gradient(135deg, #ed8936, #dd6b20); }
+        .edit-score { display: flex; gap: 10px; align-items: center; }
+        input { padding: 5px 10px; border: 1px solid #ddd; border-radius: 3px; width: 80px; }
+        .reset-section { text-align: center; padding: 20px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 10px; }
+        .back-link { text-align: center; margin-top: 20px; }
+        .back-link a { color: #667eea; text-decoration: none; font-weight: bold; }
+        @media (max-width: 600px) {
+            .admin-container { padding: 10px; }
+            h1 { font-size: 1.5rem; }
+            .admin-section { padding: 10px; }
+            .player-item { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .edit-score input { width: 60px; }
         }
     </style>
 </head>
 <body>
     <div class="admin-container">
         <h1>🏆 Admin Panel</h1>
-        
+        <div class="difficulty-tabs">
+            <button class="difficulty-tab active" data-difficulty="easy">Easy</button>
+            <button class="difficulty-tab" data-difficulty="medium">Medium</button>
+            <button class="difficulty-tab" data-difficulty="hard">Hard</button>
+        </div>
         <div class="admin-section">
             <h2>📊 Current Leaderboard</h2>
             <div id="playerList" class="player-list">
                 <p>Loading...</p>
             </div>
         </div>
-
         <div class="admin-section reset-section">
             <h2>⚠️ Danger Zone</h2>
-            <p>Reset the entire leaderboard (this cannot be undone)</p>
-            <button class="danger" onclick="resetLeaderboard()">Reset All Scores</button>
+            <p>Reset the leaderboard for this difficulty (cannot be undone)</p>
+            <button class="danger" onclick="resetLeaderboard()">Reset This Leaderboard</button>
+            <hr style="margin:20px 0;">
+            <p>Wipe <b>ALL</b> scores for all difficulties (cannot be undone)</p>
+            <button class="danger" onclick="wipeAllLeaderboards()">Wipe All Scores</button>
         </div>
-
         <div class="back-link">
             <a href="/">← Back to Game</a>
         </div>
     </div>
-
     <script>
         let leaderboard = [];
-
+        let currentDifficulty = 'easy';
+        document.querySelectorAll('.difficulty-tab').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.difficulty-tab').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentDifficulty = this.getAttribute('data-difficulty');
+                loadLeaderboard();
+            });
+        });
         async function loadLeaderboard() {
             try {
-                const response = await fetch('/admin/api');
+                const response = await fetch(`/admin/api?difficulty=${currentDifficulty}`);
                 leaderboard = await response.json();
                 displayLeaderboard();
             } catch (error) {
@@ -173,15 +133,12 @@
                 document.getElementById('playerList').innerHTML = '<p>Error loading leaderboard</p>';
             }
         }
-
         function displayLeaderboard() {
             const playerList = document.getElementById('playerList');
-            
             if (leaderboard.length === 0) {
                 playerList.innerHTML = '<p>No players yet!</p>';
                 return;
             }
-
             let html = '';
             leaderboard.forEach((player, index) => {
                 html += `
@@ -202,15 +159,12 @@
             });
             playerList.innerHTML = html;
         }
-
         async function removePlayer(name) {
-            if (!confirm(`Are you sure you want to remove ${name}?`)) return;
-            
+            if (!confirm(`Are you sure you want to remove ${name} from ${currentDifficulty}?`)) return;
             try {
-                const response = await fetch(`/admin/player/${encodeURIComponent(name)}`, {
+                const response = await fetch(`/admin/player/${encodeURIComponent(name)}?difficulty=${currentDifficulty}`, {
                     method: 'DELETE'
                 });
-                
                 if (response.ok) {
                     alert(`Player ${name} removed successfully!`);
                     loadLeaderboard();
@@ -222,24 +176,18 @@
                 alert('Error removing player');
             }
         }
-
         async function updateScore(name, index) {
             const newScore = parseInt(document.getElementById(`score-${index}`).value);
-            
             if (isNaN(newScore) || newScore < 0) {
                 alert('Please enter a valid score');
                 return;
             }
-            
             try {
-                const response = await fetch(`/admin/player/${encodeURIComponent(name)}`, {
+                const response = await fetch(`/admin/player/${encodeURIComponent(name)}?difficulty=${currentDifficulty}`, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ score: newScore })
                 });
-                
                 if (response.ok) {
                     alert(`Player ${name} score updated to ${newScore}!`);
                     loadLeaderboard();
@@ -251,15 +199,12 @@
                 alert('Error updating score');
             }
         }
-
         async function resetLeaderboard() {
-            if (!confirm('Are you sure you want to reset the entire leaderboard? This cannot be undone!')) return;
-            
+            if (!confirm(`Are you sure you want to reset the ${currentDifficulty} leaderboard? This cannot be undone!`)) return;
             try {
-                const response = await fetch('/admin/reset', {
+                const response = await fetch(`/admin/reset?difficulty=${currentDifficulty}`, {
                     method: 'DELETE'
                 });
-                
                 if (response.ok) {
                     alert('Leaderboard reset successfully!');
                     loadLeaderboard();
@@ -271,7 +216,21 @@
                 alert('Error resetting leaderboard');
             }
         }
-
+        async function wipeAllLeaderboards() {
+            if (!confirm('Are you sure you want to WIPE ALL leaderboards for ALL difficulties? This cannot be undone!')) return;
+            try {
+                const response = await fetch('/admin/wipe', { method: 'DELETE' });
+                if (response.ok) {
+                    alert('All leaderboards wiped successfully!');
+                    loadLeaderboard();
+                } else {
+                    alert('Failed to wipe all leaderboards');
+                }
+            } catch (error) {
+                console.error('Error wiping all leaderboards:', error);
+                alert('Error wiping all leaderboards');
+            }
+        }
         loadLeaderboard();
     </script>
 </body>
