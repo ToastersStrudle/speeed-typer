@@ -8,8 +8,8 @@ const LEADERBOARD_FILE = path.join(__dirname, 'leaderboard.json');
 
 const basicAuth = require('express-basic-auth');
 
-const ADMIN_USER = 'admin_8f3k2x';
-const ADMIN_PASS = 'P@ssw0rd!7x2Qb9#z';
+const ADMIN_USER = process.env.ADMIN_USER;
+const ADMIN_PASS = process.env.ADMIN_PASS;
 
 app.use(['/admin', '/admin/api', '/admin/player/:name', '/admin/reset'], basicAuth({
     users: { [ADMIN_USER]: ADMIN_PASS },
